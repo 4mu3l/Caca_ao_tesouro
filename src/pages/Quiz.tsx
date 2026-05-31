@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { questoesMock, respostasMock, gerarId } from "../data/mock";
+import { useQuiz } from "../context/QuizContext";
+import { useWebSocket } from "../context/WebSocketContext";
+import { questoesMock, gerarId, calcularRanking } from "../data/mock";
 import type { Questao } from "../types";
 
 export default function Quiz() {
   const navigate = useNavigate();
   const { usuario } = useAuth();
+  const { obterRespostasUsuario, registrarResposta } = useQuiz();
+  const { enviarResposta: enviarWebSocket } = useWebSocket();
   const [questoesPendentes, setQuestoesPendentes] = useState<Questao[]>([]);
   const [questaoAtual, setQuestaoAtual] = useState(0);
   const [carregando, setCarregando] = useState(true);
@@ -23,9 +27,8 @@ export default function Quiz() {
   }, [usuario]);
 
   function carregarQuestoes() {
-    const respondidas = new Set(
-      respostasMock.filter((r) => r.usuario_id === usuario!.id).map((r) => r.questao_id)
-    );
+    const respostasUsuario = obterRespostasUsuario(usuario!.id);
+    const respondidas = new Set(respostasUsuario.map((r) => r.questao_id));
     const pendentes = questoesMock.filter((q) => !respondidas.has(q.id));
     setQuestoesPendentes(pendentes);
     setCarregando(false);
@@ -44,8 +47,7 @@ export default function Quiz() {
 
     const acertou = alternativaSelecionada === questao.resposta_correta;
     const pontos_ganhos = acertou ? questao.pontos_acerto : questao.pontos_erro;
-
-    respostasMock.push({
+const resposta = {
       id: gerarId(),
       usuario_id: usuario.id,
       questao_id: questao.id,
@@ -53,6 +55,21 @@ export default function Quiz() {
       acertou,
       pontos_ganhos,
       respondida_em: new Date().toISOString(),
+    };
+
+    registrarResposta(resposta);
+
+    // Enviar para WebSocket para sincronizar com outros clientes
+    const ranking = calcularRanking();
+    const usuarioNoRanking = ranking.find((r) => r.id === usuario.id);
+    
+    enviarWebSocket({
+      usuario_id: usuario.id,
+      apelido: usuario.apelido,
+      pontos: usuarioNoRanking?.pontos || 0,
+      questoes_respondidas: usuarioNoRanking?.questoes_respondidas || 0,
+      acertos: usuarioNoRanking?.acertos || 0,
+      erros: usuarioNoRanking?.erros || 0,
     });
 
     setFeedback({ acertou, pontos: pontos_ganhos });

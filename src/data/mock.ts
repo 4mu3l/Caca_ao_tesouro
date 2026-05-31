@@ -3,6 +3,41 @@ import type { Questao, Usuario, Resposta } from "../types";
 export let usuariosMock: Usuario[] = [];
 export let respostasMock: Resposta[] = [];
 
+const CHAVE_USUARIOS = "usuarios_caca_tesouro";
+const CHAVE_RESPOSTAS = "respostas_caca_tesouro";
+
+// Funções para gerenciar usuários no localStorage
+export function obterTodosUsuarios(): Usuario[] {
+  const salvo = localStorage.getItem(CHAVE_USUARIOS);
+  return salvo ? JSON.parse(salvo) : [];
+}
+
+export function registrarNovoUsuario(usuario: Usuario): void {
+  const usuarios = obterTodosUsuarios();
+  usuarios.push(usuario);
+  localStorage.setItem(CHAVE_USUARIOS, JSON.stringify(usuarios));
+}
+
+// Funções para gerenciar respostas no localStorage
+export function obterTodasRespostas(): Resposta[] {
+  const salvo = localStorage.getItem(CHAVE_RESPOSTAS);
+  return salvo ? JSON.parse(salvo) : [];
+}
+
+const CHAVE_RANKING_REMOTO = "ranking_remoto_caca_tesouro";
+
+export function atualizarRankingRemoto(dadosRemotos: any) {
+  const salvo = localStorage.getItem(CHAVE_RANKING_REMOTO);
+  const rankingRemoto = salvo ? JSON.parse(salvo) : {};
+  rankingRemoto[dadosRemotos.usuario_id] = dadosRemotos;
+  localStorage.setItem(CHAVE_RANKING_REMOTO, JSON.stringify(rankingRemoto));
+}
+
+export function obterRankingRemoto() {
+  const salvo = localStorage.getItem(CHAVE_RANKING_REMOTO);
+  return salvo ? JSON.parse(salvo) : {};
+}
+
 export const questoesMock: Questao[] = [
   { id: 1, pergunta: "Qual questão melhor define o conceito amplo de violência estudado no projeto?", alternativa_a: "Apenas a agressão física direta", alternativa_b: "Discussões de opinião entre duas pessoas", alternativa_c: "Apenas os crimes graves que estão previstos no Código Penal", alternativa_d: "Uso intencional da força ou do poder que pode causar danos físicos, psíquicos ou sociais", resposta_correta: "D", pontos_acerto: 5, pontos_erro: 1 },
   { id: 2, pergunta: "O bullying e o cyberbullying são formas de violência que se caracterizam por:", alternativa_a: "Brincadeiras isoladas que acontecem uma única vez entre amigos", alternativa_b: "Críticas construtivas feitas para ajudar no desempenho escolar", alternativa_c: "Agressões intencionais, verbais ou físicas, feitas de maneira repetitiva contra alguém", alternativa_d: "Conflitos normais que ajudam a fortalecer o caráter da vítima", resposta_correta: "C", pontos_acerto: 5, pontos_erro: 1 },
@@ -32,13 +67,16 @@ export function gerarId(): string {
 }
 
 export function calcularRanking() {
-  const map = new Map<string, { usuario: Usuario; pontos: number; respondidas: number; acertos: number; erros: number }>();
+  const usuarios = obterTodosUsuarios();
+  const respostas = obterTodasRespostas();
+  
+  const map = new Map<string, { id: string; nome_completo?: string; apelido: string; pontos: number; respondidas: number; acertos: number; erros: number }>();
 
-  for (const u of usuariosMock) {
-    map.set(u.id, { usuario: u, pontos: 0, respondidas: 0, acertos: 0, erros: 0 });
+  for (const u of usuarios) {
+    map.set(u.id, { id: u.id, nome_completo: u.nome_completo, apelido: u.apelido, pontos: 0, respondidas: 0, acertos: 0, erros: 0 });
   }
 
-  for (const r of respostasMock) {
+  for (const r of respostas) {
     const entry = map.get(r.usuario_id);
     if (entry) {
       entry.pontos += r.pontos_ganhos;
@@ -48,11 +86,26 @@ export function calcularRanking() {
     }
   }
 
+  const rankingRemoto = obterRankingRemoto();
+  for (const id in rankingRemoto) {
+    if (!map.has(id)) {
+      const remoto = rankingRemoto[id];
+      map.set(id, {
+        id: remoto.usuario_id,
+        apelido: remoto.apelido,
+        pontos: remoto.pontos,
+        respondidas: remoto.questoes_respondidas,
+        acertos: remoto.acertos,
+        erros: remoto.erros
+      });
+    }
+  }
+
   return Array.from(map.values())
     .map((e) => ({
-      id: e.usuario.id,
-      nome_completo: e.usuario.nome_completo,
-      apelido: e.usuario.apelido,
+      id: e.id,
+      nome_completo: e.nome_completo || "",
+      apelido: e.apelido,
       pontos: e.pontos,
       questoes_respondidas: e.respondidas,
       acertos: e.acertos,
