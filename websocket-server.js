@@ -1,7 +1,7 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 // Criar um servidor HTTP simples
 const server = http.createServer();
@@ -86,6 +86,6 @@ wss.on('connection', (ws) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`🚀 Servidor WebSocket rodando em ws://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor WebSocket rodando na porta ${PORT}`);
 });
