@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { usuariosMock } from "../data/mock";
+import { obterTodosUsuarios } from "../data/mock";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -13,7 +13,8 @@ export default function Login() {
     e.preventDefault();
     setErro("");
 
-    const usuario = usuariosMock.find(
+    const usuarios = obterTodosUsuarios();
+    const usuario = usuarios.find(
       (u) => u.nome_completo === nomeCompleto.trim()
     );
 

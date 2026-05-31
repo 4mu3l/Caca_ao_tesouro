@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { usuariosMock, gerarId } from "../data/mock";
+import { obterTodosUsuarios, registrarNovoUsuario, gerarId } from "../data/mock";
 import type { Usuario } from "../types";
 
 export default function Cadastro() {
@@ -21,13 +21,15 @@ export default function Cadastro() {
       return;
     }
 
-    const nomeExiste = usuariosMock.find((u) => u.nome_completo === nomeCompleto.trim());
+    const usuariosExistentes = obterTodosUsuarios();
+
+    const nomeExiste = usuariosExistentes.find((u) => u.nome_completo === nomeCompleto.trim());
     if (nomeExiste) {
       setErro("Este nome completo já está cadastrado. Use outro!");
       return;
     }
 
-    const apelidoExiste = usuariosMock.find((u) => u.apelido === apelido.trim());
+    const apelidoExiste = usuariosExistentes.find((u) => u.apelido === apelido.trim());
     if (apelidoExiste) {
       setErro("Este apelido já está em uso. Escolha outro!");
       return;
@@ -43,7 +45,7 @@ export default function Cadastro() {
       criado_em: new Date().toISOString(),
     };
 
-    usuariosMock.push(novoUsuario);
+    registrarNovoUsuario(novoUsuario);
     login(novoUsuario);
     navigate("/home");
   }

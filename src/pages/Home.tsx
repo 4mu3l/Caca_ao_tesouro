@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { calcularRanking, questoesMock, respostasMock } from "../data/mock";
+import { useWebSocket } from "../context/WebSocketContext";
+import { calcularRanking, questoesMock, obterTodasRespostas } from "../data/mock";
 import type { RankingItem } from "../types";
 
 export default function Home() {
   const navigate = useNavigate();
   const { usuario, logout } = useAuth();
+  const { adicionarListener, conectado } = useWebSocket();
   const [ranking, setRanking] = useState<RankingItem[]>([]);
 
+  // Carregamento inicial do ranking
   useEffect(() => {
     if (!usuario) {
       navigate("/");
@@ -17,8 +20,18 @@ export default function Home() {
     setRanking(calcularRanking());
   }, [usuario]);
 
+  // Registrar listener para atualizações do WebSocket
+  useEffect(() => {
+    const unsubscribe = adicionarListener(() => {
+      console.log("Atualizando ranking...");
+      setRanking(calcularRanking());
+    });
+
+    return unsubscribe;
+  }, [adicionarListener]);
+
   const totalQuestoes = questoesMock.length;
-  const minhasRespostas = respostasMock.filter((r) => r.usuario_id === usuario?.id);
+  const minhasRespostas = obterTodasRespostas().filter((r) => r.usuario_id === usuario?.id);
   const questoesRestantes = totalQuestoes - minhasRespostas.length;
 
   function handleSair() {
@@ -35,6 +48,18 @@ export default function Home() {
           <div>
             <h2>Olá, {usuario?.apelido}!</h2>
             <p>{usuario?.nome_completo}</p>
+          </div>
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{
+              width: "12px",
+              height: "12px",
+              borderRadius: "50%",
+              backgroundColor: conectado ? "#4CAF50" : "#999",
+              boxShadow: conectado ? "0 0 8px #4CAF50" : "none",
+            }} />
+            <span style={{ fontSize: "12px", color: conectado ? "#4CAF50" : "#999" }}>
+              {conectado ? "Online" : "Offline"}
+            </span>
           </div>
         </div>
         <button className="btn-sair-home" onClick={handleSair}>

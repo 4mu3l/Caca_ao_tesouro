@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { QuizProvider } from "./context/QuizContext";
+import { WebSocketProvider } from "./context/WebSocketContext";
 import Cadastro from "./pages/Cadastro";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -26,7 +28,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <QuizProvider>
+          <WebSocketProvider>
+            <AppRoutes />
+          </WebSocketProvider>
+        </QuizProvider>
       </AuthProvider>
     </BrowserRouter>
   );
