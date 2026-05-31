@@ -11,6 +11,7 @@ export default function Quiz() {
   const [questaoAtual, setQuestaoAtual] = useState(0);
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
+  const [alternativaSelecionada, setAlternativaSelecionada] = useState<"A" | "B" | "C" | "D" | null>(null);
   const [feedback, setFeedback] = useState<{ acertou: boolean; pontos: number } | null>(null);
 
   useEffect(() => {
@@ -30,21 +31,25 @@ export default function Quiz() {
     setCarregando(false);
   }
 
-  function enviarResposta(letra: "A" | "B" | "C" | "D") {
-    if (!usuario || questoesPendentes.length === 0 || enviando) return;
+  function selecionarAlternativa(letra: "A" | "B" | "C" | "D") {
+    if (enviando || feedback) return; // não permite trocar depois de confirmar
+    setAlternativaSelecionada(letra);
+  }
+
+  function confirmarResposta() {
+    if (!usuario || questoesPendentes.length === 0 || !alternativaSelecionada || enviando) return;
 
     const questao = questoesPendentes[questaoAtual];
     setEnviando(true);
-    setFeedback(null);
 
-    const acertou = letra === questao.resposta_correta;
+    const acertou = alternativaSelecionada === questao.resposta_correta;
     const pontos_ganhos = acertou ? questao.pontos_acerto : questao.pontos_erro;
 
     respostasMock.push({
       id: gerarId(),
       usuario_id: usuario.id,
       questao_id: questao.id,
-      resposta_marcada: letra,
+      resposta_marcada: alternativaSelecionada,
       acertou,
       pontos_ganhos,
       respondida_em: new Date().toISOString(),
@@ -54,6 +59,7 @@ export default function Quiz() {
 
     setTimeout(() => {
       setFeedback(null);
+      setAlternativaSelecionada(null);
       if (questaoAtual < questoesPendentes.length - 1) {
         setQuestaoAtual((prev) => prev + 1);
       } else {
@@ -106,37 +112,66 @@ export default function Quiz() {
         <h2 className="pergunta">{questao.pergunta}</h2>
 
         <div className="alternativas">
-          {(["A", "B", "C", "D"] as const).map((letra) => (
-            <button
-              key={letra}
-              className={`alternativa ${feedback && feedback.acertou && questao.resposta_correta === letra ? "correta" : ""}`}
-              onClick={() => enviarResposta(letra)}
-              disabled={enviando}
-            >
-              <span className="letra">{letra}</span>
-              <span className="texto">
-                {letra === "A" ? questao.alternativa_a :
-                 letra === "B" ? questao.alternativa_b :
-                 letra === "C" ? questao.alternativa_c :
-                 questao.alternativa_d}
-              </span>
-            </button>
-          ))}
+          {(["A", "B", "C", "D"] as const).map((letra) => {
+            const isSelecionada = alternativaSelecionada === letra;
+            const isCorreta = feedback && questao.resposta_correta === letra;
+            const isErradaSelecionada = feedback && !feedback.acertou && isSelecionada;
+
+            let classe = "alternativa";
+            if (isSelecionada && !feedback) classe += " selecionada";
+            if (isCorreta && feedback) classe += " correta";
+            if (isErradaSelecionada) classe += " errada-selecionada";
+
+            return (
+              <button
+                key={letra}
+                className={classe}
+                onClick={() => selecionarAlternativa(letra)}
+                disabled={!!feedback}
+              >
+                <span className="letra">{letra}</span>
+                <span className="texto">
+                  {letra === "A" ? questao.alternativa_a :
+                   letra === "B" ? questao.alternativa_b :
+                   letra === "C" ? questao.alternativa_c :
+                   questao.alternativa_d}
+                </span>
+              </button>
+            );
+          })}
         </div>
+
+        {/* Botão Confirmar Resposta */}
+        {!feedback && (
+          <div style={{ marginTop: "24px", textAlign: "center" }}>
+            <button
+              className="btn-primario"
+              onClick={confirmarResposta}
+              disabled={!alternativaSelecionada || enviando}
+              style={{ maxWidth: "300px" }}
+            >
+              {enviando ? "Enviando..." : "Confirmar Resposta"}
+            </button>
+          </div>
+        )}
 
         {feedback && (
           <div className={`feedback ${feedback.acertou ? "acerto" : "erro"}`}>
             {feedback.acertou
-              ? `🎉 Acertou! +${feedback.pontos} pontos`
-              : `😢 Errou! +${feedback.pontos} ponto`}
+              ? ` Acertou! +${feedback.pontos} pontos`
+              : ` Errou! ${feedback.pontos} ponto`}
           </div>
         )}
       </div>
 
       {/* Botão Voltar ao Menu na parte inferior */}
       <div className="quiz-footer">
-        <button className="btn-voltar-menu" onClick={() => navigate("/home")} disabled={enviando}>
-          ⬅️ Voltar ao Menu
+        <button 
+          className="btn-voltar-menu" 
+          onClick={() => navigate("/home")} 
+          disabled={enviando}
+        >
+           Voltar ao Menu
         </button>
       </div>
     </div>

@@ -104,13 +104,21 @@ export default function Home() {
       <div className="home-acao">
         {questoesRestantes > 0 ? (
           <>
-            <p className="home-restantes">Faltam {questoesRestantes} questões para você responder!</p>
+            
             <button className="btn-quiz-home" onClick={() => navigate("/quiz")}>
                Continuar Caçada
             </button>
+          {/* MINI CARD DE ALERTA - ADICIONADO ABAIXO DO BOTÃO */}
+            <div className="mini-card-alerta">
+              <div className="alerta-icone">!</div>
+                <p className="faltam">Faltam {questoesRestantes} questões para você responder!</p>
+            </div>
           </>
         ) : (
-          <p className="home-restantes home-completo">🎉 Você completou todas as questões!</p>
+          <div className="mini-card-alerta">
+              <div className="alerta-icone">!</div>
+          <p className="home-restantes home-completo"> Você completou todas as questões!</p>
+          </div>
         )}
       </div>
     </div>
