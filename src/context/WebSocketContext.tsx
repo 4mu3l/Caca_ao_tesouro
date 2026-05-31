@@ -23,7 +23,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   // Conectar ao servidor WebSocket
   useEffect(() => {
     // Usa a URL do .env ou localhost como padrão
-    const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
+    const wsUrl = (import.meta as any).env.VITE_WS_URL || "ws://localhost:8080";
     const websocket = new WebSocket(wsUrl);
 
     websocket.onopen = () => {

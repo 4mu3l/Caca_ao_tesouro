@@ -104,7 +104,7 @@ export function calcularRanking() {
   return Array.from(map.values())
     .map((e) => ({
       id: e.id,
-      nome_completo: e.nome_completo,
+      nome_completo: e.nome_completo || "",
       apelido: e.apelido,
       pontos: e.pontos,
       questoes_respondidas: e.respondidas,
