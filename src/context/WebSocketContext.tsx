@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import {
   createContext,
   useContext,
@@ -8,9 +7,6 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-=======
-import { createContext, useContext, useEffect, useCallback, useState, useRef, type ReactNode } from "react";
->>>>>>> 3a11d1742b95cb1d71351df28770f8ea5be5d7f1
 import type { RankingItem } from "../types";
 import { atualizarRankingRemoto, calcularRanking } from "../data/mock";
 
@@ -21,13 +17,9 @@ interface WebSocketContextType {
   adicionarListener: (callback: () => void) => () => void;
 }
 
-<<<<<<< HEAD
 const WebSocketContext = createContext<WebSocketContextType | undefined>(
   undefined,
 );
-=======
-const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
->>>>>>> 3a11d1742b95cb1d71351df28770f8ea5be5d7f1
 
 // Lista de listeners para notificar quando ranking é atualizado
 const listeners = new Set<() => void>();
@@ -53,17 +45,11 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       const usuario = localStorage.getItem("usuario_caca_tesouro");
       if (usuario) {
         const u = JSON.parse(usuario);
-<<<<<<< HEAD
 
         const rankingLocal = calcularRanking();
         const usuarioNoRanking = rankingLocal.find(
           (r: RankingItem) => r.id === u.id,
         );
-=======
-        
-        const rankingLocal = calcularRanking();
-        const usuarioNoRanking = rankingLocal.find((r: RankingItem) => r.id === u.id);
->>>>>>> 3a11d1742b95cb1d71351df28770f8ea5be5d7f1
 
         websocket.send(
           JSON.stringify({
@@ -74,11 +60,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
             questoes_respondidas: usuarioNoRanking?.questoes_respondidas || 0,
             acertos: usuarioNoRanking?.acertos || 0,
             erros: usuarioNoRanking?.erros || 0,
-<<<<<<< HEAD
-          }),
-=======
           })
->>>>>>> 3a11d1742b95cb1d71351df28770f8ea5be5d7f1
         );
       }
     };
@@ -86,7 +68,6 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     websocket.onmessage = (event) => {
       const mensagem = JSON.parse(event.data);
 
-<<<<<<< HEAD
       if (mensagem.tipo === "participantes_online") {
         mensagem.dados.forEach((participante: any) => {
           atualizarRankingRemoto(participante);
@@ -100,14 +81,6 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
         atualizarRankingRemoto(mensagem.dados);
 
         listeners.forEach((callback) => callback());
-=======
-      if (mensagem.tipo === "atualizar_ranking") {
-        console.log("🎯 Ranking atualizado!", mensagem.dados);
-        atualizarRankingRemoto(mensagem.dados);
-        // Notificar todos os listeners
-        listeners.forEach((callback) => callback());
-        // Forçar re-render
->>>>>>> 3a11d1742b95cb1d71351df28770f8ea5be5d7f1
         setUpdateTrigger((prev) => prev + 1);
       }
     };
@@ -135,11 +108,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
         JSON.stringify({
           tipo: "resposta_respondida",
           dados,
-<<<<<<< HEAD
         }),
-=======
-        })
->>>>>>> 3a11d1742b95cb1d71351df28770f8ea5be5d7f1
       );
       console.log("📤 Resposta enviada ao servidor");
     }
@@ -153,13 +122,9 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-<<<<<<< HEAD
     <WebSocketContext.Provider
       value={{ conectado, ranking, enviarResposta, adicionarListener }}
     >
-=======
-    <WebSocketContext.Provider value={{ conectado, ranking, enviarResposta, adicionarListener }}>
->>>>>>> 3a11d1742b95cb1d71351df28770f8ea5be5d7f1
       {children}
     </WebSocketContext.Provider>
   );
@@ -167,14 +132,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
 export function useWebSocket() {
   const ctx = useContext(WebSocketContext);
-<<<<<<< HEAD
   if (!ctx)
     throw new Error("useWebSocket deve ser usado dentro de WebSocketProvider");
   return ctx;
 }
-=======
-  if (!ctx) throw new Error("useWebSocket deve ser usado dentro de WebSocketProvider");
-  return ctx;
-}
-
->>>>>>> 3a11d1742b95cb1d71351df28770f8ea5be5d7f1
