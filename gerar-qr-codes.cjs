@@ -5,7 +5,7 @@ const QRCode = require('qrcode'); // npm install qrcode
 const fs = require('fs');
 
 // URL base do seu site (substitua pelo seu domínio real)
-const BASE_URL = "https://seusite.vercel.app";
+const BASE_URL = "https://caca-ao-tesouro-one.vercel.app";
 // const BASE_URL = "https://caca-tesouro-senai.vercel.app";
 
 // Quantidade de QR Codes para gerar (ex: 20 questões = 20 QR Codes)
