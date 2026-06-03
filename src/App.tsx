@@ -6,6 +6,7 @@ import Cadastro from "./pages/Cadastro";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Quiz from "./pages/Quiz";
+import QrRedirect from "./pages/QrRedirect"; // NOVO: Página de redirecionamento QR
 import "./App.css";
 
 function RotaProtegida({ children }: { children: React.ReactNode }) {
@@ -18,6 +19,10 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Cadastro />} />
       <Route path="/login" element={<Login />} />
+
+      {/* NOVO: Rota para QR Code */}
+      <Route path="/qr/:id" element={<QrRedirect />} />
+
       <Route path="/home" element={<RotaProtegida><Home /></RotaProtegida>} />
       <Route path="/quiz" element={<RotaProtegida><Quiz /></RotaProtegida>} />
     </Routes>
